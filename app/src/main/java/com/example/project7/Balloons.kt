@@ -1,84 +1,52 @@
 package com.example.project7
 
-import android.graphics.Rect
 import android.util.Log
-import kotlin.math.absoluteValue
 import kotlin.math.sqrt
 
-class Balloons() {
-
-    private lateinit var balloon1: Balloon
-    private lateinit var balloon2: Balloon
-    private lateinit var balloon3: Balloon
-
-    private var balloonsHit = 0
+class Balloons {
 
     private lateinit var gameView: GameView
+    private val balloonList = mutableListOf<Balloon>()
+    private var balloonsHit = 0
 
     fun setGameView(view: GameView) {
         this.gameView = view
     }
 
-    fun assessTouch(touchX: Int, touchY: Int) {
-        val dx1 = touchX - balloon1.x
-        val dy1 = touchY - balloon1.y
-        val dist1 = sqrt((dx1 * dx1 + dy1 * dy1).toDouble())
-
-        val dx2 = touchX - balloon2.x
-        val dy2 = touchY - balloon2.y
-        val dist2 = sqrt((dx2 * dx2 + dy2 * dy2).toDouble())
-
-        val dx3 = touchX - balloon3.x
-        val dy3 = touchY - balloon3.y
-        val dist3 = sqrt((dx3 * dx3 + dy3 * dy3).toDouble())
-
-        if (dist1 <= balloon1.r) {
-            balloon1.isHit = true
-            balloonsHit++
-            gameView.postInvalidate()
-            Log.w("MainActivity", "pop 1")
-        }
-
-        if (dist2 <= balloon2.r) {
-            balloon2.isHit = true
-            balloonsHit++
-            gameView.postInvalidate()
-            Log.w("MainActivity", "pop 2")
-        }
-
-        if (dist3 <= balloon3.r) {
-            balloon3.isHit = true
-            balloonsHit++
-            gameView.postInvalidate()
-            Log.w("MainActivity", "pop 3")
-        }
-    }
-
-    fun setBalloons(balloon : Balloon, num : Int) {
-            if(num == 1) {
-                balloon1 = balloon
-            } else {
-                if(num == 2){
-                    balloon2 = balloon
-                } else {
-                    balloon3 = balloon
-                }
+    fun setBalloons(balloon: Balloon, num: Int) {
+        if (balloonList.size >= num) {
+            balloonList[num - 1] = balloon
+        } else {
+            // Fill in gaps if needed
+            while (balloonList.size < num - 1) {
+                balloonList.add(Balloon(0, 0, 0)) // Dummy placeholder
             }
+            balloonList.add(balloon)
+        }
     }
 
-    fun checkGame(clicks : Int) : Int {
+    fun assessTouch(touchX: Int, touchY: Int) {
+        for (balloon in balloonList) {
+            val dx = touchX - balloon.x
+            val dy = touchY - balloon.y
+            val dist = sqrt((dx * dx + dy * dy).toDouble())
 
+            if (dist <= balloon.r && !balloon.isHit) {
+                balloon.isHit = true
+                balloonsHit++
+                gameView.postInvalidate()
+                break // Only pop one balloon per touch
+            }
+        }
+    }
+
+    fun checkGame(clicks: Int): Int {
         val maxAttempts = MainActivity.BALLOON_NUM + 3
 
-        if (clicks < 6) {
-
-            if (balloonsHit == MainActivity.BALLOON_NUM) {
-                return 0 //win
-            } else {
-                return 1 //cont
-            }
-
+        return when {
+            clicks < maxAttempts && balloonsHit == MainActivity.BALLOON_NUM -> 0 // win
+            clicks < maxAttempts -> 1 // continue
+            else -> if (balloonsHit == MainActivity.BALLOON_NUM) 0 else 2 // win or lose
         }
-        return 2 //lose
     }
 }

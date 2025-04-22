@@ -19,18 +19,13 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var gameView : GameView
     private lateinit var balloons : Balloons
+    private lateinit var currBalloon : Balloon
 
-    private lateinit var balloon1: Balloon
-    private lateinit var balloon2: Balloon
-    private lateinit var balloon3: Balloon
-
-
+    private val balloonArray = mutableListOf<Balloon>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //setContentView(R.layout.activity_main)
-
-        lateinit var toast : Toast
 
         parseJson()
         setView()
@@ -54,7 +49,10 @@ class MainActivity : AppCompatActivity() {
             val r = balloon.getInt("radius")
             val inc = i + 1
 
-            assignBalloons(x, y, r, inc)
+            currBalloon = Balloon(x, y, r)
+
+            balloonArray.add(i, currBalloon)
+
             MainActivity.BALLOON_NUM = jsonArray.length()
 
             Log.w("MainActivity", "Balloon $inc: x=$x, y=$y, radius=$r")
@@ -63,21 +61,9 @@ class MainActivity : AppCompatActivity() {
 
     fun setView() {
         balloons = Balloons()
-        gameView = GameView(this, balloon1, balloon2, balloon3, balloons)
+        gameView = GameView(this, balloonArray, balloons)
         balloons.setGameView(gameView)
         setContentView(gameView)
-    }
-
-    fun assignBalloons(x: Int, y: Int, r: Int, num: Int) {
-        if (num == 1) {
-            balloon1 = Balloon(x, y, r)
-        } else {
-            if (num == 2) {
-                balloon2 = Balloon(x, y, r)
-            } else {
-                balloon3 = Balloon(x, y, r)
-            }
-        }
     }
 
     companion object {
